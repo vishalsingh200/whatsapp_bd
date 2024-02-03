@@ -7,6 +7,7 @@ import cookieParser from "cookie-parser";
 import compression from "compression";
 import fileUpload from "express-fileupload";
 import cors from "cors";
+import createHttpError from "http-errors";
 
 //dot env confog
 dotenv.config();
@@ -47,7 +48,23 @@ app.use(fileUpload({
 app.use(cors())
 
 app.post('/test', (req, res) => {
-    res.send("hello from server");
+    throw createHttpError.BadRequest("this route has an error.")
 });
+
+
+app.use(async(req, res, next) => {
+    next(createHttpError.NotFound("This route does not exits."))
+})
+
+//error handling
+app.use(async(err, req, res, next) => {
+    res.status(err.status || 500);
+    res.send({
+        error: {
+            status: err.status || 500,
+            message: err.message,
+        }
+    })
+})
 
 export default app;
